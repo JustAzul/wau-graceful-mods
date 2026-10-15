@@ -8,7 +8,7 @@ $root = Split-Path -Parent $here
 . (Join-Path $root 'src\lib\ReopenMarker.ps1')
 . (Join-Path $root 'src\lib\ModLogic.ps1')
 
-# Stubs with the contract signatures of functions owned by other slices. Everything
+# Stubs with the signatures of the functions that live in other libraries. Everything
 # below Mocks them, so no real window is closed and no real scheduled task is touched.
 function Close-App {
     [CmdletBinding()]

@@ -639,7 +639,7 @@ Describe 'Copy-GwmRuntime' {
         $repo
     }
 
-    It 'lays the runtime out as in the contract' {
+    It 'lays the runtime out as the design notes describe' {
         $repo = New-FakeRepo
         $wau = New-TempDir
         $copied = @(Copy-GwmRuntime -RepoRoot $repo -WauDir $wau)

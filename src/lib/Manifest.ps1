@@ -1,4 +1,4 @@
-# Manifest loading and path helpers shared by every slice.
+# Manifest loading and path helpers shared by the other libraries.
 # The manifest is read with Import-PowerShellDataFile, so it can hold data only.
 
 function Import-GwmManifest {

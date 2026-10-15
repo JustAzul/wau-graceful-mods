@@ -292,7 +292,7 @@ function Get-GwmWauInstallDir {
     [CmdletBinding()]
     param()
 
-    # WAU's MSI writes InstallLocation under this key (Sources/Wix/build.wxs, CompReg).
+    # WAU's MSI writes InstallLocation under this key.
     $keys = @(
         'HKLM:\SOFTWARE\Romanitho\Winget-AutoUpdate',
         'HKLM:\SOFTWARE\WOW6432Node\Romanitho\Winget-AutoUpdate'

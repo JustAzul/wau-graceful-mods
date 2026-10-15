@@ -1,7 +1,7 @@
 # Policy logic behind the WAU mods: close an app before its update, remember that it owes
 # a reopen, reopen it afterwards, and reconcile at logon. Collaborators are looked up by
 # name at call time: Close-App, Invoke-GwmTask, Test-GwmInteractiveSession and the
-# manifest/marker helpers. Every entry point emits exactly one value of its contract type.
+# manifest/marker helpers. Every entry point emits exactly one value of its documented type.
 
 function Get-GwmDefaultManifestPath {
     [CmdletBinding()]

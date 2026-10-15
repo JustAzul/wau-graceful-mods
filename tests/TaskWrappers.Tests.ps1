@@ -24,7 +24,7 @@ function Remove-TempFiles {
 }
 
 # The wrappers load a library only when its function is missing, so the test defines fakes
-# with the contract signatures first. Log.ps1 is loaded here; Manifest.ps1 is left to the close
+# with the real signatures first. Log.ps1 is loaded here; Manifest.ps1 is left to the close
 # wrapper, because its $script: tables must live in the scope of the script that calls it.
 . (Join-Path $root 'src\lib\Log.ps1')
 

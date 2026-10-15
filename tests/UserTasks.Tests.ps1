@@ -83,7 +83,7 @@ Describe 'New-GwmTaskSpec' {
     $app = New-FakeApp -Process 'fake-app'
     $common = @{ App = $app; UserSid = 'S-1-5-21-1-2-3-1001'; TasksDir = 'C:\fake\gwm\tasks'; TaskFolder = '\wau-graceful-mods\' }
 
-    It 'returns exactly the contract fields' {
+    It 'returns exactly the documented fields' {
         $spec = New-GwmTaskSpec @common -Action close
         $names = @($spec.PSObject.Properties | ForEach-Object { $_.Name } | Sort-Object)
         ($names -join ',') | Should Be 'Arguments,Execute,ExecutionTimeLimit,LogonType,MultipleInstances,RunLevel,TaskName,TaskPath,UserSid'
@@ -313,7 +313,7 @@ Describe 'Invoke-GwmTask' {
             $r.Result | Should Be 0
             $r.Reason | Should Be 'done'
         }
-        It 'returns exactly one object with the contract fields' {
+        It 'returns exactly one object with the documented fields' {
             New-TestTask $script:folder $script:app.Process 'close' 'exit 0'
             $r = @(Invoke-GwmTask -App $script:app -Action close -TaskFolder $script:folder -TimeoutSec 20)
             $r.Count | Should Be 1
