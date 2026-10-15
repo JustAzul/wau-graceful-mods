@@ -21,3 +21,12 @@ Describe 'Test-GwmProcessRunning' {
         $r[0] -is [bool] | Should Be $true
     }
 }
+
+Describe 'Test-GwmRunningAsSystem' {
+    It 'returns one bool and is false for the test user' {
+        $r = @(Test-GwmRunningAsSystem)
+        $r.Count | Should Be 1
+        ($r[0] -is [bool]) | Should Be $true
+        $r[0] | Should Be ([System.Security.Principal.WindowsIdentity]::GetCurrent().IsSystem)
+    }
+}

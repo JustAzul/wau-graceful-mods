@@ -10,3 +10,11 @@ function Test-GwmProcessRunning {
     # Get-Process -Name matches case-insensitively and sees every session.
     [bool](@(Get-Process -Name $ProcessName -ErrorAction SilentlyContinue).Count -gt 0)
 }
+
+function Test-GwmRunningAsSystem {
+    [CmdletBinding()]
+    [OutputType([bool])]
+    param()
+
+    [bool][System.Security.Principal.WindowsIdentity]::GetCurrent().IsSystem
+}

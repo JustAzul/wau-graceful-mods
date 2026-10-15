@@ -1,6 +1,7 @@
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $root = Split-Path -Parent $here
 . (Join-Path $root 'src\lib\Log.ps1')
+. (Join-Path $root 'src\lib\Process.ps1')
 . (Join-Path $root 'src\lib\ReopenMarker.ps1')
 
 $script:tmp = [System.IO.Path]::GetFullPath($env:TEMP)
@@ -34,13 +35,91 @@ Describe 'Get-GwmStateDir' {
         Use-TempStateDir
         @(Get-GwmStateDir).Count | Should Be 1
     }
-    It 'falls back to the ProgramData location when GWM_STATE_DIR is unset' {
+    It 'uses the default location when GWM_STATE_DIR is unset' {
         $env:GWM_STATE_DIR = $null
-        # Only compute the path: never create the real folder from a test.
+        $script:defaultDir = Join-Path $script:tmp ('gwm-default-{0}' -f [guid]::NewGuid().ToString('N'))
+        Mock Get-GwmDefaultStateDir { $script:defaultDir }
+        try {
+            Get-GwmStateDir | Should Be $script:defaultDir
+            Test-Path -LiteralPath $script:defaultDir -PathType Container | Should Be $true
+        }
+        finally {
+            Remove-Item -LiteralPath $script:defaultDir -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+    It 'lets GWM_STATE_DIR win over the default location' {
+        Use-TempStateDir
+        Mock Get-GwmDefaultStateDir { throw 'must not be asked' }
+        Get-GwmStateDir | Should Be $script:stateDir
+    }
+}
+
+Describe 'Get-GwmDefaultStateDir' {
+    BeforeEach {
+        $script:savedProgramData = $env:ProgramData
+        $script:savedLocalAppData = $env:LOCALAPPDATA
+        $env:ProgramData = 'C:\fake-programdata'
+        $env:LOCALAPPDATA = 'C:\fake-user\AppData\Local'
+    }
+    AfterEach {
+        $env:ProgramData = $script:savedProgramData
+        $env:LOCALAPPDATA = $script:savedLocalAppData
+    }
+
+    It 'is under ProgramData for SYSTEM' {
+        Mock Test-GwmRunningAsSystem { $true }
+        Get-GwmDefaultStateDir | Should Be 'C:\fake-programdata\wau-graceful-mods\state'
+    }
+    It 'is under the per-user LOCALAPPDATA for anyone else' {
+        Mock Test-GwmRunningAsSystem { $false }
+        Get-GwmDefaultStateDir | Should Be 'C:\fake-user\AppData\Local\wau-graceful-mods\state'
+    }
+    It 'creates nothing' {
+        Mock Test-GwmRunningAsSystem { $false }
         Mock New-Item { }
-        Mock Test-Path { $false }
-        $dir = Get-GwmStateDir
-        $dir | Should Be (Join-Path $env:ProgramData 'wau-graceful-mods\state')
+        Get-GwmDefaultStateDir | Out-Null
+        Assert-MockCalled New-Item -Exactly -Times 0
+        Test-Path -LiteralPath 'C:\fake-user\AppData\Local\wau-graceful-mods' | Should Be $false
+    }
+    It 'throws when the per-user location cannot be determined' {
+        Mock Test-GwmRunningAsSystem { $false }
+        $env:LOCALAPPDATA = $null
+        { Get-GwmDefaultStateDir } | Should Throw
+    }
+}
+
+Describe 'markers are per identity' {
+    BeforeEach {
+        $script:savedStateDir = $env:GWM_STATE_DIR
+        $script:savedProgramData = $env:ProgramData
+        $script:savedLocalAppData = $env:LOCALAPPDATA
+        $script:fakeRoot = Join-Path $script:tmp ('gwm-ident-{0}' -f [guid]::NewGuid().ToString('N'))
+        $env:GWM_STATE_DIR = $null
+        $env:ProgramData = Join-Path $script:fakeRoot 'ProgramData'
+        $env:LOCALAPPDATA = Join-Path $script:fakeRoot 'Local'
+    }
+    AfterEach {
+        $env:GWM_STATE_DIR = $script:savedStateDir
+        $env:ProgramData = $script:savedProgramData
+        $env:LOCALAPPDATA = $script:savedLocalAppData
+        Remove-Item -LiteralPath $script:fakeRoot -Recurse -Force -ErrorAction SilentlyContinue
+    }
+
+    It 'a marker written by a standard user is not listed to SYSTEM, and the reverse' {
+        Mock Write-GwmLog { }
+        Mock Test-GwmRunningAsSystem { $false }
+        Set-GwmReopenOwed -ProcessName 'user-app'
+        @(Get-GwmReopenOwed) -join ',' | Should Be 'user-app'
+
+        Mock Test-GwmRunningAsSystem { $true }
+        @(Get-GwmReopenOwed).Count | Should Be 0
+        Set-GwmReopenOwed -ProcessName 'machine-app'
+        @(Get-GwmReopenOwed) -join ',' | Should Be 'machine-app'
+
+        Mock Test-GwmRunningAsSystem { $false }
+        @(Get-GwmReopenOwed) -join ',' | Should Be 'user-app'
+        Test-Path -LiteralPath (Join-Path $env:LOCALAPPDATA 'wau-graceful-mods\state\reopen-user-app.json') | Should Be $true
+        Test-Path -LiteralPath (Join-Path $env:ProgramData 'wau-graceful-mods\state\reopen-machine-app.json') | Should Be $true
     }
 }
 

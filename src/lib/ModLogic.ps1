@@ -30,14 +30,6 @@ function Get-GwmModUserContext {
     Get-GwmUserContext -Path (Join-Path (Split-Path -Parent $PSScriptRoot) 'context.json')
 }
 
-function Test-GwmRunningAsSystem {
-    [CmdletBinding()]
-    [OutputType([bool])]
-    param()
-
-    [bool][System.Security.Principal.WindowsIdentity]::GetCurrent().IsSystem
-}
-
 function ConvertTo-GwmMajor {
     [CmdletBinding()]
     param([string]$Version)

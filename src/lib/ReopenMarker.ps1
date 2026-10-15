@@ -1,6 +1,23 @@
 # Reopen markers: a process name written here means "this app was closed for an update
 # and owes a reopen". One reopen-<name>.json file per process in the state directory.
 
+function Get-GwmDefaultStateDir {
+    [CmdletBinding()]
+    [OutputType([string])]
+    param()
+
+    # %ProgramData%\wau-graceful-mods is locked to SYSTEM and Administrators, so only SYSTEM
+    # (the machine-scope pass and the global mod) can keep its markers there. Everyone else
+    # keeps them in their own profile. Nothing is created here.
+    if (Test-GwmRunningAsSystem) {
+        return (Join-Path $env:ProgramData 'wau-graceful-mods\state')
+    }
+    if ([string]::IsNullOrWhiteSpace($env:LOCALAPPDATA)) {
+        throw 'Cannot place the reopen markers: LOCALAPPDATA is not set'
+    }
+    Join-Path $env:LOCALAPPDATA 'wau-graceful-mods\state'
+}
+
 function Get-GwmStateDir {
     [CmdletBinding()]
     [OutputType([string])]
@@ -8,7 +25,7 @@ function Get-GwmStateDir {
 
     $dir = $env:GWM_STATE_DIR
     if ([string]::IsNullOrWhiteSpace($dir)) {
-        $dir = Join-Path $env:ProgramData 'wau-graceful-mods\state'
+        $dir = Get-GwmDefaultStateDir
     }
     if (-not (Test-Path -LiteralPath $dir -PathType Container)) {
         New-Item -ItemType Directory -Path $dir -Force | Out-Null

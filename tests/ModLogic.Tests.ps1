@@ -157,13 +157,6 @@ Describe 'Test-GwmMajorUpgrade' {
     }
 }
 
-Describe 'Test-GwmRunningAsSystem' {
-    It 'returns one bool and is false for the test user' {
-        $out = @(Test-GwmRunningAsSystem)
-        Get-OneValue -Output $out -Type ([bool]) | Should Be $false
-    }
-}
-
 Describe 'Get-GwmExeMajorVersion' {
     It 'reads the major part of a real file version' {
         $exe = Join-Path $PSHOME 'powershell.exe'

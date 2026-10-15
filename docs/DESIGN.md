@@ -78,7 +78,8 @@ Runtime on the machine (written by the installer):
 <WauDir>\mods\gwm\context.json    { UserSid, ProfilePath } of the desktop user
 <WauDir>\mods\gwm\lib\*.ps1       Load.ps1 dot-sources the rest
 <WauDir>\mods\gwm\tasks\Invoke-CloseTask.ps1, Invoke-OpenTask.ps1
-%ProgramData%\wau-graceful-mods\state\    reopen markers (override: $env:GWM_STATE_DIR)
+%ProgramData%\wau-graceful-mods\state\    reopen markers of the SYSTEM passes (override: $env:GWM_STATE_DIR)
+%LOCALAPPDATA%\wau-graceful-mods\state\   reopen markers of a standard user's pass (user-scope apps)
 %ProgramData%\wau-graceful-mods\backups\
 ```
 
@@ -241,6 +242,13 @@ Set-GwmReopenOwed   -ProcessName <string>    -> writes reopen-<name>.json {proce
 Get-GwmReopenOwed                            -> [string[]] sorted process names (corrupt files ignored + logged)
 Clear-GwmReopenOwed -ProcessName <string>    -> silent if absent
 ```
+
+`Get-GwmStateDir` is `$env:GWM_STATE_DIR` when set, else `Get-GwmDefaultStateDir`: the
+ProgramData folder for SYSTEM, `%LOCALAPPDATA%\wau-graceful-mods\state` for anyone else. The
+ProgramData folder is locked to SYSTEM and Administrators (section 8), so a standard user's
+pass (user-scope apps) keeps its markers in its own profile. The global mod runs as SYSTEM
+and reconciles SYSTEM markers only; a user-scope marker is consumed by the same pass's
+`-installed` or `-notinstalled` mod.
 
 `ModLogic.ps1`. The code under test must run against **faked** `Close-App`,
 `Invoke-GwmTask`, `Test-GwmProcessRunning`, `Resolve-GwmExe`, `Start-Process` (define stubs
