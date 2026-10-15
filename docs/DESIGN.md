@@ -177,7 +177,7 @@ tasks that run **as the desktop user**, interactive token, limited run level, no
 ```
 Get-GwmTaskName -App <hashtable> -Action close|open               -> '<Process>-<action>'
 New-GwmTaskSpec -App -Action -UserSid <string> -TasksDir <string> -TaskFolder <string>
-                [-ExePath <string>] [-TimeoutSec <int> = 30]       -> [pscustomobject]
+                [-ExePath <string>] [-TimeoutSec <int> = 60]       -> [pscustomobject]
 Register-GwmTasks   -Apps <hashtable[]> -UserSid -TasksDir -TaskFolder [-UserContext] -> specs registered
 Unregister-GwmTasks -Apps <hashtable[]> -TaskFolder               -> nothing; silent if absent
 Test-GwmInteractiveSession                                        -> [bool] (an explorer.exe exists)
@@ -260,7 +260,7 @@ Invoke-GwmReopen -App <hashtable> [-UserContext] [-TaskFolder <string>] -> [bool
                 Refuses ($false, logged) when the caller runs as SYSTEM: a user-scope exe lives in
                 a user-writable folder and must never be launched as SYSTEM.
 Invoke-GwmPreInstall  -AppId <string> [-InstalledVersion <string>] [-AvailableVersion <string>]
-                      [-ManifestPath <string>] [-TimeoutSec <int> = 30]            -> [bool]
+                      [-ManifestPath <string>] [-TimeoutSec <int> = 60]            -> [bool]
 Invoke-GwmPostInstall -AppId <string> -Succeeded <bool> [-ManifestPath <string>]   -> [bool] always $true
 Invoke-GwmReconcile   [-ManifestPath <string>]                                     -> [int] reopened
 Wait-GwmSettle        [-ManifestPath <string>] [-MaxWaitSec <int> = 300] [-PollSec <int> = 5]
@@ -291,6 +291,9 @@ and every manifest app with `Autostart = $true` has its process running. Reachin
 `MaxWaitSec` is not an error: log the missing ones and return `Settled` false.
 
 Every `Invoke-GwmTask` call from this file passes `-TaskFolder $manifest.TaskFolder`.
+The machine-scope close waits `TimeoutSec + 20` seconds for the task, so the wrapper inside the
+task (which waits `TimeoutSec`) decides the outcome and the 20 s cover task start and
+PowerShell startup in the user session.
 
 Path defaults (runtime only; tests pass explicit paths): `ManifestPath` =
 `<parent of lib>\apps.psd1`, user context = `<parent of lib>\context.json`.
