@@ -72,7 +72,7 @@ function New-TestTask {
 Describe 'Get-GwmTaskName' {
     It 'joins the process name and the action' {
         Get-GwmTaskName -App (New-FakeApp -Process 'qbittorrent') -Action close | Should Be 'qbittorrent-close'
-        Get-GwmTaskName -App (New-FakeApp -Process 'MailClient') -Action open | Should Be 'MailClient-open'
+        Get-GwmTaskName -App (New-FakeApp -Process 'FakeClient') -Action open | Should Be 'FakeClient-open'
     }
     It 'rejects an unknown action' {
         { Get-GwmTaskName -App (New-FakeApp) -Action nuke } | Should Throw

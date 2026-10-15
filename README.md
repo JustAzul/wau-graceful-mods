@@ -2,7 +2,7 @@
 
 Mods for [Winget-AutoUpdate](https://github.com/Romanitho/Winget-AutoUpdate) (WAU) that
 update a fixed list of apps at logon without losing work. For apps that stay open, such as
-a torrent client or a mail client, the mods close the app gracefully, skip the update when
+a torrent client or a note-taking app, the mods close the app gracefully, skip the update when
 the app will not exit, and reopen it as the desktop user afterwards.
 
 WAU runs as SYSTEM in session 0, so it cannot ask a window in your desktop session to close,
@@ -21,14 +21,16 @@ per-app scheduled tasks that run as you.
 - When the app does not exit within the timeout, it keeps running and its update waits for
   the next logon.
 - Reopens the app as you after the update, or after a failed update.
-- Before a major version upgrade, copies the data folder listed for the app into
-  `%ProgramData%\wau-graceful-mods\backups` and keeps the newest two.
+- For an app that lists a `BackupOnMajorUpgrade` folder, copies it into
+  `%ProgramData%\wau-graceful-mods\backups` before a major version upgrade and keeps the newest two.
 - Locks `%ProgramData%\wau-graceful-mods` to SYSTEM and Administrators, because it holds
   files that SYSTEM reads.
 
 ## Apps
 
-The list lives in `config/apps.psd1`; edit it and run the installer again.
+The list lives in `config/apps.psd1`. To add an app, edit it and run the installer again. To
+drop one, run the uninstaller first, then edit and install again, so the old app's mods and
+tasks are removed.
 
 | Policy | Meaning |
 |---|---|

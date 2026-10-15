@@ -122,7 +122,7 @@ Describe 'Expand-GwmPath' {
     }
     It 'maps the per-user folders onto a given profile' {
         $ctx = [pscustomobject]@{ ProfilePath = 'C:\Users\fake-user' }
-        Expand-GwmPath -Path '%APPDATA%\eM Client' -UserContext $ctx | Should Be 'C:\Users\fake-user\AppData\Roaming\eM Client'
+        Expand-GwmPath -Path '%APPDATA%\Fake App' -UserContext $ctx | Should Be 'C:\Users\fake-user\AppData\Roaming\Fake App'
         Expand-GwmPath -Path '%LOCALAPPDATA%\x' -UserContext $ctx | Should Be 'C:\Users\fake-user\AppData\Local\x'
         Expand-GwmPath -Path '%USERPROFILE%\x' -UserContext $ctx | Should Be 'C:\Users\fake-user\x'
     }

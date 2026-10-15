@@ -695,10 +695,13 @@ function Get-ShellState {
         if (Test-Path -LiteralPath $dir) {
             $parts += (Get-ChildItem -LiteralPath $dir -Recurse -Force -ErrorAction SilentlyContinue |
                 Sort-Object FullName | ForEach-Object {
-                    # A folder has no Length property: reading it is an error under strict mode.
+                    # A folder has no Length property: reading it is an error under strict mode. Its
+                    # last-write time is left out: it can move on its own, and the entries inside it
+                    # are listed anyway.
                     $size = 0
-                    if (-not $_.PSIsContainer) { $size = $_.Length }
-                    '{0}|{1}|{2}' -f $_.FullName, $size, $_.LastWriteTimeUtc.Ticks
+                    $stamp = 0
+                    if (-not $_.PSIsContainer) { $size = $_.Length; $stamp = $_.LastWriteTimeUtc.Ticks }
+                    '{0}|{1}|{2}' -f $_.FullName, $size, $stamp
                 })
         }
         else {
@@ -737,8 +740,13 @@ Describe 'install scripts' {
 
         It 'exits 0' { $r.ExitCode | Should Be 0 }
         It 'prints the WAU install command with the MSI properties' {
+            if (Get-GwmWauInstallDir) { Set-TestInconclusive 'WAU is installed on this machine, so the dry run skips the winget install line'; return }
             $r.Output | Should Match 'winget install --id Romanitho\.Winget-AutoUpdate --exact --silent'
             $r.Output | Should Match '--override "/qn /norestart UPDATESATLOGON=1 UPDATESINTERVAL=Never USERCONTEXT=1 USEWHITELIST=1 NOTIFICATIONLEVEL=Full DISABLEWAUAUTOUPDATE=1"'
+        }
+        It 'says the WAU install is skipped when WAU is already installed' {
+            if (-not (Get-GwmWauInstallDir)) { Set-TestInconclusive 'WAU is not installed on this machine, so the dry run prints the winget install line'; return }
+            $r.Output | Should Match 'WAU is already installed at .*; skip winget install'
         }
         It 'plans the data folder lock-down before the WAU install' {
             $r.Output | Should Match 'state and \\backups, remove inheritance, allow only SYSTEM and Administrators'

@@ -343,7 +343,7 @@ Protect-GwmDataDirs -Root <string>                       -> [pscustomobject] Roo
 
 `Protect-GwmDataDirs`: `%ProgramData%\wau-graceful-mods` sits under a
 folder where standard users may create subfolders, so a user could pre-create it and plant
-reopen markers or read the eM Client backups. The function creates `<Root>\state` and
+reopen markers or read the app-data backups. The function creates `<Root>\state` and
 `<Root>\backups` when missing, and on `<Root>` and both folders removes inheritance and
 grants full control to SYSTEM and Administrators only; when elevated it also sets the owner
 to Administrators (`OwnerFixed`). `Safe` is the result of `Test-GwmPathAcl` afterwards. The

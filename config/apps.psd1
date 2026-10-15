@@ -23,6 +23,9 @@
     #                       lives hidden in the tray. Closing normally targets visible windows
     #                       only; these patterns add the hidden main window and nothing else,
     #                       because framework helper windows can end the process abruptly.
+    # eM Client is left out on purpose: it stays in the tray on a close request, and version 11 is a
+    # major upgrade packaged as MSIX, so its executable path changes. Add it back only with a close
+    # method that makes it exit and a reopen that follows the new package.
     Apps = @(
         @{
             Id                = 'qBittorrent.qBittorrent'
@@ -32,16 +35,6 @@
             Autostart         = $true
             Exe               = @('%ProgramFiles%\qBittorrent\qbittorrent.exe')
             HiddenWindowClass = @('Qt*QWindowIcon')
-        },
-        @{
-            Id                   = 'eMClient.eMClient'
-            Process              = 'MailClient'
-            Scope                = 'machine'
-            Policy               = 'close-reopen'
-            Autostart            = $true
-            Exe                  = @('%ProgramFiles(x86)%\eM Client\MailClient.exe', '%ProgramFiles%\eM Client\MailClient.exe')
-            BackupOnMajorUpgrade = '%APPDATA%\eM Client'
-            HiddenWindowClass    = @('WindowsForms10.Window.8.*')
         },
         @{
             Id        = 'Obsidian.Obsidian'
