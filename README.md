@@ -79,6 +79,19 @@ Confirm when exiting; the installer warns when the setting is on.
 It deletes only the files the installer recorded and unregisters the scheduled tasks. Reopen
 markers and backups under `%ProgramData%\wau-graceful-mods` stay.
 
+## Tested with
+
+Windows PowerShell 5.1 and Winget-AutoUpdate 2.12.0, the version winget installed when this was
+set up. The installer takes whatever version winget offers, so an upgrade of WAU itself can change
+behaviour the mods rely on: they depend on WAU calling each `<AppId>-preinstall.ps1` and
+`-installed.ps1` / `-notinstalled.ps1` mod with `$app` in scope, honouring a `$false` result from
+the pre-install mod, and running `_WAU-mods.ps1` before it checks for updates.
+
+The whitelist limits which apps WAU updates. It does not limit what WAU installs for itself: on
+every SYSTEM pass WAU checks its own prerequisites and may install the Visual C++ 2015-2022
+redistributable, the `Microsoft.VCLibs.140.00.UWPDesktop` package and winget (App Installer), whether
+or not they are on the list.
+
 ## Development
 
 Tests are Pester 3.4 on Windows PowerShell 5.1. From WSL:
